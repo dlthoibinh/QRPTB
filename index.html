@@ -3,11 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu Trạm Thới Bình</title>
+    <title>Tra cứu Thông tin Trạm</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Giao diện nhập Pass Key -->
+    <div id="auth-container">
+        <h1>Vui lòng nhập Pass Key</h1>
+        <input type="password" id="passKey" placeholder="Nhập Pass Key...">
+        <button id="verifyBtn">Xác nhận</button>
+        <p id="error-msg" style="color: red; display: none;">Pass Key không đúng. Vui lòng thử lại!</p>
+    </div>
+
+    <!-- Giao diện tra cứu -->
+    <div id="main-container" style="display: none;">
         <h1>Tra cứu Thông tin Trạm</h1>
         <div class="search-container">
             <input type="text" id="search" placeholder="Nhập mã hoặc tên trạm...">

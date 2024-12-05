@@ -1,7 +1,24 @@
-// Link Google Sheets (CSV)
+// Pass Key do anh đặt
+const correctPassKey = "123456"; // Thay giá trị này bằng Pass Key của anh
+
+// Xử lý xác thực Pass Key
+document.getElementById('verifyBtn').addEventListener('click', function () {
+    const passKey = document.getElementById('passKey').value;
+    const errorMsg = document.getElementById('error-msg');
+    if (passKey === correctPassKey) {
+        // Pass Key đúng, hiển thị giao diện chính
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('main-container').style.display = 'block';
+    } else {
+        // Pass Key sai, hiển thị thông báo lỗi
+        errorMsg.style.display = 'block';
+    }
+});
+
+// URL Google Sheets (CSV)
 const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-Z-uNUdq15XfoS0HBRDy4J2n3yUTpRGmL6MR3-P5Oh4Q44vpMQKxwZFZVTQUHZKjO6e8bYnDMMkGr/pub?output=csv';
 
-// Dữ liệu được tải từ Google Sheets
+// Dữ liệu tải về từ Google Sheets
 let data = [];
 
 // Lấy dữ liệu từ Google Sheets
@@ -9,7 +26,7 @@ fetch(googleSheetUrl)
     .then(response => response.text())
     .then(csvText => {
         data = csvToJson(csvText);
-        createTableHeaders(data[0]); // Tạo tiêu đề bảng
+        createTableHeaders(data[0]); // Tạo tiêu đề bảng từ dữ liệu
     });
 
 // Chuyển CSV thành JSON
@@ -27,7 +44,7 @@ function csvToJson(csv) {
         });
 }
 
-// Tạo tiêu đề bảng từ cột đầu tiên
+// Tạo tiêu đề bảng từ dòng đầu tiên
 function createTableHeaders(row) {
     const headers = Object.keys(row);
     const headerRow = document.getElementById('headers');

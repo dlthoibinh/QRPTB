@@ -1,93 +1,56 @@
-/* Tổng thể */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
     background-color: #f9f9f9;
     color: #333;
-    text-align: center;
-    margin: 0;
-    padding: 20px;
 }
 
 h1 {
-    margin-bottom: 20px;
-    color: #007acc;
+    text-align: center;
+    color: #0056b3;
 }
 
-/* Hộp tìm kiếm */
-.search-container {
-    margin: 0 auto;
+#auth-container, #main-container {
+    max-width: 600px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+input {
     width: 80%;
-    position: relative;
-}
-
-input#search {
-    width: 100%;
-    padding: 10px 15px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    outline: none;
-    transition: 0.3s;
-}
-
-input#search:focus {
-    border-color: #007acc;
-    box-shadow: 0 0 5px rgba(0, 122, 204, 0.5);
-}
-
-/* Gợi ý */
-ul#suggestions {
-    list-style: none;
-    padding: 0;
-    margin: 5px 0 0;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: absolute;
-    width: 100%;
-    z-index: 10;
-}
-
-ul#suggestions li {
     padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007acc;
+    color: white;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background 0.2s;
 }
 
-ul#suggestions li:hover {
-    background: #007acc;
-    color: #fff;
-}
-
-/* Bảng kết quả */
-.table-container {
-    margin-top: 20px;
-    overflow-x: auto;
+button:hover {
+    background-color: #005f99;
 }
 
 table {
-    width: 80%;
-    margin: 0 auto;
+    width: 100%;
     border-collapse: collapse;
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
 }
 
 th, td {
-    padding: 10px;
     border: 1px solid #ddd;
+    padding: 10px;
     text-align: left;
 }
 
 th {
-    background: #007acc;
-    color: #fff;
-    text-transform: uppercase;
-}
-
-td {
-    font-size: 14px;
+    background-color: #f2f2f2;
+    color: #333;
 }
