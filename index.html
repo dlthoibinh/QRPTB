@@ -1,36 +1,206 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu Thông tin Trạm</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông Tin Trạm CC Và CD</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    input {
+      font-size: 18px;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 5px 0 20px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    li {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #ddd;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    li:hover {
+      background-color: #f0f0f0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    table th, table td {
+      text-align: left;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    table th {
+      background-color: #f7f7f7;
+      font-weight: bold;
+    }
+
+    .result-container {
+      margin-top: 20px;
+    }
+
+    .loading {
+      text-align: center;
+      font-size: 16px;
+      color: #555;
+    }
+  </style>
 </head>
 <body>
-    <!-- Giao diện nhập Pass Key -->
-    <div id="auth-container">
-        <h1>Vui lòng nhập Pass Key</h1>
-        <input type="password" id="passKey" placeholder="Nhập Pass Key...">
-        <button id="verifyBtn">Xác nhận</button>
-        <p id="error-msg" style="color: red; display: none;">Pass Key không đúng. Vui lòng thử lại!</p>
-    </div>
+  <h1>Thông Tin Trạm CC Và CD</h1>
+  <input type="text" id="input" placeholder="Nhập mã trạm hoặc tên trạm...">
+  <ul id="suggestions"></ul>
 
-    <!-- Giao diện tra cứu -->
-    <div id="main-container" style="display: none;">
-        <h1>Tra cứu Thông tin Trạm</h1>
-        <div class="search-container">
-            <input type="text" id="search" placeholder="Nhập mã hoặc tên trạm...">
-            <ul id="suggestions"></ul>
-        </div>
-        <div class="table-container">
-            <table id="resultTable" style="display:none;">
-                <thead>
-                    <tr id="headers"></tr>
-                </thead>
-                <tbody id="resultBody"></tbody>
-            </table>
-        </div>
-    </div>
-    <script src="script.js"></script>
+  <div class="result-container" id="result"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script>
+    const apiUrl = 'https://script.google.com/macros/s/AKfycbwJBhD3zlOseUqJwczSjG5o_yC6C83WD8PyHigKhSj3Jlcq1pknPgWAXD-7p1QVSBRFEQ/exec'; // Thay bằng URL Web App của bạn
+
+    const input = document.getElementById('input');
+    const suggestionsList = document.getElementById('suggestions');
+    const resultDiv = document.getElementById('result');
+
+    let debounceTimeout; // Biến lưu timeout cho debounce
+
+    function setCookie(name, value, minutes) {
+      const date = new Date();
+      date.setTime(date.getTime() + (minutes * 60 * 1000));
+      document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+    }
+
+    function getCookie(name) {
+      const cookies = document.cookie.split('; ');
+      for (const cookie of cookies) {
+        const [key, value] = cookie.split('=');
+        if (key === name) return value;
+      }
+      return null;
+    }
+
+    async function askForPassword() {
+      let password;
+      while (true) {
+        password = prompt('Vui lòng nhập mật khẩu:');
+        if (!password) continue;
+
+        const hashedPassword = CryptoJS.MD5(password).toString();
+        const response = await fetch(`${apiUrl}?password=${encodeURIComponent(hashedPassword)}`);
+        const data = await response.json();
+
+        if (response.ok && !data.error) {
+          setCookie('password', hashedPassword, 30); // Save password for 30 minutes
+          return hashedPassword;
+        } else {
+          alert('Mật khẩu không hợp lệ!');
+        }
+      }
+    }
+
+    async function ensurePassword() {
+      let password = getCookie('password');
+      if (!password) {
+        password = await askForPassword();
+      }
+      return password;
+    }
+
+    input.addEventListener('input', async (e) => {
+      const query = e.target.value.trim();
+
+      // Hủy timeout cũ nếu người dùng tiếp tục nhập
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+
+      // Đặt timeout mới để chờ 1 giây
+      debounceTimeout = setTimeout(async () => {
+        if (query.length > 0) {
+          const password = await ensurePassword();
+          fetchSuggestions(query, password);
+        } else {
+          suggestionsList.innerHTML = '';
+        }
+      }, 1000); // 1000ms = 1s
+    });
+
+    async function fetchSuggestions(query, password) {
+      suggestionsList.innerHTML = '<div class="loading">Đang tải...</div>';
+      const response = await fetch(`${apiUrl}?query=${query}&password=${encodeURIComponent(password)}`);
+      const data = await response.json();
+
+      // Xóa các gợi ý cũ
+      suggestionsList.innerHTML = '';
+
+      // Thêm gợi ý mới
+      if (data.suggestions && data.suggestions.length > 0) {
+        data.suggestions.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = `${item.code} - ${item.name}`;
+          li.addEventListener('click', async () => {
+            input.value = item.code;
+            suggestionsList.innerHTML = '';
+            const password = await ensurePassword();
+            fetchDetails(item.code, password);
+          });
+          suggestionsList.appendChild(li);
+        });
+      }
+    }
+
+    async function fetchDetails(id, password) {
+      resultDiv.innerHTML = '<div class="loading">Đang tải...</div>';
+      const response = await fetch(`${apiUrl}?id=${id}&password=${encodeURIComponent(password)}`);
+      const data = await response.json();
+
+      // Hiển thị dữ liệu dạng bảng
+      if (!data.error) {
+        let tableHTML = '<table><thead><tr><th>Thông tin</th><th>Giá trị</th></tr></thead><tbody>';
+
+        for (const [key, value] of Object.entries(data)) {
+          const formattedValue = typeof value === 'string'
+            ? value.replace(/\n/g, '<br>').replace(/\t/g, '&emsp;') // Replace \n and \t
+            : value;
+          tableHTML += `<tr><td>${key}</td><td>${formattedValue}</td></tr>`;
+        }
+
+        tableHTML += '</tbody></table>';
+        resultDiv.innerHTML = tableHTML;
+      } else {
+        resultDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
+      }
+    }
+
+    // Ensure password on page load
+    ensurePassword();
+  </script>
+
 </body>
 </html>
